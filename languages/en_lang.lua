@@ -1,18 +1,22 @@
----------------------------------- ENGLISH -------------------------------------------
 Locales["en_lang"] = {
-
     fillCanteen = "Fill Canteen",
     fillBucket = "Fill Bucket",
+    fillBottle = "Fill Bottle",
     wash = "Wash",
     drink = "Drink",
     fullCanteen = "Your canteen is full.",
-    fullBucket = "Your bucket is full.",
-    message_4 = "Canteen is ~o~75 ~q~percent full.",
-    message_3 = "Canteen is ~o~50 ~q~percent full.",
-    message_2 = "Canteen is ~o~25 ~q~percent full.",
-    message_1 = "Your canteen is empty!",
-    notEmpty = "Your canteen is not empty.",
+    fillingComplete = "Filling complete.",
+    emptyCanteen = "Your canteen is empty!",
     needCanteen = "You need a canteen!",
-    needBucket = "You need an empty bucket!",
-    waterPump = "Water Pump"
+    needBucket = "You don't have enough empty buckets!",
+    needBottle = "You don't have enough empty bottles!",
+    waterPump = "Water Pump",
+    Durability = "Durability",
+    brokeCanteen = "Your canteen has broken!",
+    drinksLeft = "Drinks Left",
+    quantity = "Quantity",
+    confirm = "Confirm",
+    headerFillBuckets = "Fill Buckets",
+    headerFillBottles = "Fill Bottles",
+    canteenDesc = "A portable container to carry water.",
 }
