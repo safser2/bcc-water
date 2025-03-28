@@ -18,6 +18,7 @@ Config = {
     -- NXT Metabolism Paid          = 7
     -- Andrade Metabolism Paid      = 8
     -- FX-HUD                       = 9
+    -- Mega Metabolism              = 10
     app = 1,
     ---------------------------------------------------------------
 
@@ -62,20 +63,36 @@ Config = {
             bucketAmount = 5  -- Maximum Amount of Buckets to Fill at Once
         }
     },
+
+    -- Chance to Get Sick by Drinking from Wild Waters
+    sicknessChance = 25, -- Range 1 - 100 (lower number = lower chance) / Set to 0 to Disable
+
     ---------------------------------------------------------------
 
     -- Item Names from Database
     canteen     = 'canteen',
 
     emptyBucket = 'wateringcan_empty',
-    fullBucket  = 'wateringcan',
+    cleanBucket = 'wateringcan',
+	dirtyBucket = 'wateringcan_dirtywater',
 
     emptyBottle = 'bcc_empty_bottle',
-    fullBottle  = 'bcc_full_bottle',
+    cleanBottle = 'bcc_clean_bottle',
+	dirtyBottle = 'bcc_dirty_bottle',
+
+    antidoteItem = 'antidote', -- Item name that cures sickness
     ---------------------------------------------------------------
 
     durability = {
         canteen = 5, -- Durability used per Drink
+    },
+    ---------------------------------------------------------------
+
+    -- Register Items as Useable
+    useable = {
+        cleanBottle = true,
+        dirtyBottle = true,
+        antidoteItem = true,
     },
     ---------------------------------------------------------------
 

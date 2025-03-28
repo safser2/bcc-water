@@ -3,6 +3,7 @@ local BccUtils = exports['bcc-utils'].initiate()
 
 local DevModeActive = Config.devMode.active
 local MaxCanteenDrinks = Config.maxCanteenDrinks
+local SickPlayers = {}
 
 local function DebugPrint(message)
     if DevModeActive then
@@ -111,10 +112,46 @@ Core.Callback.Register('bcc-water:UpdateCanteen', function(source, cb)
     cb(true)
 end)
 
+RegisterNetEvent('bcc-water:UpdateSickness', function(remaining)
+    local src = source
+    local user = Core.getUser(src)
+
+    -- Check if the user exists
+    if not user then
+        DebugPrint('User not found for source: ' .. tostring(src))
+        return
+    end
+
+    SickPlayers[src] = (remaining and remaining > 0) and (os.time() + remaining) or nil
+end)
+
+RegisterNetEvent('bcc-water:CheckSickness', function()
+    local src = source
+    local user = Core.getUser(src)
+
+    -- Check if the user exists
+    if not user then
+        DebugPrint('User not found for source: ' .. tostring(src))
+        return
+    end
+
+    local endTime = SickPlayers[src]
+    local remaining = endTime and (endTime - os.time())
+    if remaining and remaining > 0 then
+        TriggerClientEvent('ApplySicknessEffect', src, remaining, 30) -- tickInterval
+    end
+end)
+
+AddEventHandler('playerDropped', function()
+    local src = source
+    SickPlayers[src] = nil
+end)
+
 -- Check if Player has an Item and Update Inventory
 ---@param itemType string
 ---@param itemAmount number
-Core.Callback.Register('bcc-water:GetItem', function(source, cb, itemType, itemAmount)
+---@param pump boolean
+Core.Callback.Register('bcc-water:GetItem', function(source, cb, itemType, itemAmount, pump)
     local src = source
     local user = Core.getUser(src)
 
@@ -124,9 +161,8 @@ Core.Callback.Register('bcc-water:GetItem', function(source, cb, itemType, itemA
         return cb(false)
     end
 
-    -- Set empty and full items and notifications based on item type
+    -- Set empty item and notifications based on item type
     local emptyItem = itemType == 'bucket' and Config.emptyBucket or Config.emptyBottle
-    local fullItem = itemType == 'bucket' and Config.fullBucket or Config.fullBottle
     local notification = itemType == 'bucket' and _U('needBucket') or _U('needBottle')
 
     -- Check if the player has the required item
@@ -137,10 +173,25 @@ Core.Callback.Register('bcc-water:GetItem', function(source, cb, itemType, itemA
         return cb(false)
     end
 
-    -- Update the inventory
+    -- Remove empty items
     exports.vorp_inventory:subItem(src, emptyItem, itemAmount)
-    exports.vorp_inventory:addItem(src, fullItem, itemAmount)
-    DebugPrint('Updated inventory for source ' .. tostring(src) .. ': Removed ' .. emptyItem .. ', Added ' .. fullItem)
+
+    for i = 1, itemAmount do
+        local sourceType = pump and 'pump' or 'wild'
+
+        if itemType == 'bottle' then
+            local itemName = pump and Config.cleanBottle or Config.dirtyBottle
+
+            exports.vorp_inventory:addItem(src, itemName, 1, { source = sourceType })
+            DebugPrint('Added item to source ' .. src .. ': ' .. itemName .. ', Pump: ' .. tostring(pump))
+
+        elseif itemType == 'bucket' then
+            local itemName = pump and Config.cleanBucket or Config.dirtyBucket
+
+            exports.vorp_inventory:addItem(src, itemName, 1, { source = sourceType })
+            DebugPrint('Added item to source ' .. src .. ': ' .. itemName', Pump: ' .. tostring(pump))
+        end
+    end
 
     cb(true)
 end)
@@ -164,5 +215,39 @@ exports.vorp_inventory:registerUsableItem(Config.canteen, function(data)
         DebugPrint('Canteen cannot be used by source: ' .. tostring(src))
     end
 end)
+
+-- Clean Bottle (no sickness)
+if Config.useable.cleanBottle then
+    DebugPrint('Registering clean bottle as usable item')
+    exports.vorp_inventory:registerUsableItem(Config.cleanBottle, function(data)
+        local src = data.source
+        exports.vorp_inventory:closeInventory(src)
+        exports.vorp_inventory:subItemById(src, data.item.id)
+        exports.vorp_inventory:addItem(src, Config.emptyBottle, 1)
+        TriggerClientEvent('bcc-water:DrinkBottle', src, false)
+    end)
+end
+
+-- Dirty Bottle (sickness chance)
+if Config.useable.dirtyBottle then
+    DebugPrint('Registering dirty bottle as usable item')
+    exports.vorp_inventory:registerUsableItem(Config.dirtyBottle, function(data)
+        local src = data.source
+        exports.vorp_inventory:closeInventory(src)
+        exports.vorp_inventory:subItemById(src, data.item.id)
+        exports.vorp_inventory:addItem(src, Config.emptyBottle, 1)
+        TriggerClientEvent('bcc-water:DrinkBottle', src, true)
+    end)
+end
+
+if Config.useable.antidoteItem then
+    DebugPrint('Registering antidote item as usable item')
+    exports.vorp_inventory:registerUsableItem(Config.antidoteItem, function(data)
+        local src = data.source
+        exports.vorp_inventory:closeInventory(src)
+        exports.vorp_inventory:subItem(src, Config.antidoteItem, 1)
+        TriggerClientEvent('bcc-water:CureSickness', src)
+    end)
+end
 
 BccUtils.Versioner.checkFile(GetCurrentResourceName(), 'https://github.com/BryceCanyonCounty/bcc-water')
