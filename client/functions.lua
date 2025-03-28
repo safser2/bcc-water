@@ -313,6 +313,11 @@ function WashPlayer(animType)
     ClearPedDamageDecalByZone(playerPed, 10, 'ALL')
     ClearPedBloodDamage(playerPed)
     SetPedDirtCleaned(playerPed, 0.0, -1, true, true)
+
+    if tonumber(Config.app) == 11 then
+        exports['POS-Metabolism']:ShowerEvent()
+    end
+
     DebugPrint('Player washed successfully.')
 end
 
@@ -426,6 +431,12 @@ function PlayerStats(isWild)
         [8] = function() TriggerEvent('hud:client:changeValue', 'Thirst', thirst) end,
         [9] = function() exports['fx-hud']:setStatus('thirst', thirst) end,
         [10] = function() local ClientAPI = exports['mega_metabolism']:api() ClientAPI.addMeta('water', thirst) end,
+        [11] = function() 
+            exports['POS-Metabolism']:UpdateMultipleStatus({
+                ["water"] = thirst,
+                ["piss"] = thirst* 0.5
+            })
+        end,
     }
 
     local function updateAttribute(attributeIndex, value, maxValue)
