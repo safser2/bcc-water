@@ -19,6 +19,7 @@ Config = {
     -- Andrade Metabolism Paid      = 8
     -- FX-HUD                       = 9
     -- Mega Metabolism              = 10
+    -- POS-Metabolism Paid          = 11
     app = 1,
     ---------------------------------------------------------------
 
